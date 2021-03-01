@@ -14,6 +14,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView txtOutput;
     private TextView txtHistory;
+    private boolean invalid = false;
+    private final String InvalidInputError = "Invalid input";
     private final int[] btnArray = {
             R.id.btnClear,
             R.id.btnBackspace,
@@ -102,9 +104,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 txtOutput.append("/");
                 break;
             case R.id.btnEqual:
-                String result = String.valueOf(calculate(txtOutput.getText().toString()));
-                txtOutput.append("="+result);
-                txtHistory.append(txtOutput.getText().toString()+"\n");
+                String result;
+                try {
+                    result = String.valueOf(calculate(txtOutput.getText().toString()));
+                    txtOutput.append("="+result);
+                    txtHistory.append(txtOutput.getText().toString()+"\n");
+                } catch (Exception e) {
+                    invalid = true;
+                    result = InvalidInputError;
+                }
+
                 txtOutput.setText(result);
                 break;
             default:
@@ -121,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         txtOutput = findViewById(R.id.txtOutput);
-        //txtOutput.setMovementMethod(new ScrollingMovementMethod());
 
         txtHistory = findViewById(R.id.txtHistory);
         txtHistory.setMovementMethod(new ScrollingMovementMethod());
@@ -193,17 +201,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (operator) {
             case "add":
             case "+":
-                // result = first + second;
                 result = firstNo.add(secondNo).doubleValue();
                 break;
             case "subtract":
             case "-":
-                //result = first - second;
                 result = firstNo.subtract(secondNo).doubleValue();
                 break;
             case "multiply":
             case "*":
-                //result = first * second;
                 result = firstNo.multiply(secondNo).doubleValue();
                 break;
             case "divide":
@@ -222,7 +227,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void formatDisplayText(TextView txtView) {
-        StringBuilder strTxt = new StringBuilder(txtView.getText().toString());
+        String input = txtView.getText().toString();
+        // Remove 'Invalid input'
+        if (invalid && input.length() > InvalidInputError.length()) {
+            invalid = false;
+            input = input.substring(InvalidInputError.length());
+        }
+
+        StringBuilder strTxt = new StringBuilder(input);
         if (strTxt.equals("") || strTxt.equals("0"))
             return;
         
@@ -281,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     
     private StringBuilder mathCalculate(StringBuilder strTxt) {
+//        System.out.println(strTxt.substring(0, strTxt.length() - 1));
         if (!isNumeric(strTxt.substring(0, strTxt.length() - 1)))
             return strTxt;
 
